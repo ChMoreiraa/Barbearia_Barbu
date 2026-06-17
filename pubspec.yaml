@@ -1,0 +1,31 @@
+name: flutter_application_2
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: " >=3.10.0 < 4.0.0 "
+
+dependencies:
+  cloud_firestore: ^6.5.0
+  firebase_auth: ^6.5.2
+  firebase_core: ^4.10.0
+  flutter:
+    sdk: flutter
+  flutter_local_notifications: ^18.0.1
+  flutter_native_splash: ^2.4.7
+  http: ^1.6.0
+  intl: ^0.20.2
+  timezone: ^0.9.4
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mocktail: ^1.0.4
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
