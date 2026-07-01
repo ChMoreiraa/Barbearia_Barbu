@@ -5,9 +5,6 @@ import '../history/history_page.dart';
 import '../notifications/notifications_page.dart';
 import '../profile/profile_page.dart';
 
-// TESTANDO PRRRRRRRRRRRRRRRRRRRRRR
-
-
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -18,33 +15,43 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  // Lista de telas na ordem das abas da bottom bar
-  final List<Widget> _screens = [
-    const HomePage(),
-    const HistoryPage(),
-    const NotificationsPage(),
-    const ProfilePage(),
-  ];
+  // 1. CRIAMOS UMA FUNÇÃO PARA RENDERIZAR A TELA COM BASE NO ÍNDICE
+  Widget _buildCurrentScreen() {
+    switch (_currentIndex) {
+      case 0:
+        return HomePage(
+          // Passamos uma função para a Home poder trocar a aba
+          onNavigateToProfile: () {
+            setState(() {
+              _currentIndex = 3;
+            });
+          },
+        );
+      case 1:
+        return const HistoryPage();
+      case 2:
+        return const NotificationsPage();
+      case 3:
+        return const ProfilePage();
+      default:
+        return HomePage(
+          onNavigateToProfile: () => setState(() => _currentIndex = 3),
+        );
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          // 3. Mude de 'const HomePage()' para exibir a tela conforme o índice
-          _screens[_currentIndex], 
-          
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildCustomBottomBar(),
-          ),
-        ],
-      ),
-    );
-  }
+    Widget build(BuildContext context) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        
+        // Tiramos o Stack e passamos a tela direto para o body
+        body: _buildCurrentScreen(), 
+        
+        // Colocamos a sua barra na propriedade nativa do Scaffold
+        bottomNavigationBar: _buildCustomBottomBar(),
+      );
+    }
 
   Widget _buildCustomBottomBar() {
     return Container(
@@ -151,9 +158,11 @@ class _NavBarItemState extends State<_NavBarItem> {
   }
 }
 
-// Transformamos a HomePage em um StatefulWidget para gerenciar o carregamento do nome
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  // 3. ADICIONAMOS O CALLBACK NO CONSTRUTOR DA HOME
+  final VoidCallback? onNavigateToProfile; 
+  
+  const HomePage({super.key, this.onNavigateToProfile});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -161,7 +170,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _userName = "Carregando..."; 
-  bool _isAdmin = false; // NOVA VARIÁVEL PARA O ADMIN
+  bool _isAdmin = false; 
 
   @override
   void initState() {
@@ -169,7 +178,6 @@ class _HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
-  // Função que busca o nome e verifica se é admin no Firebase
   Future<void> _loadUserData() async {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
@@ -185,7 +193,6 @@ class _HomePageState extends State<HomePage> {
           String fullName = data['name'] ?? 'Cliente';
           String firstName = fullName.split(' ')[0];
           
-          // Verifica se o campo isAdmin existe e é true
           bool isAdmin = data.containsKey('isAdmin') ? data['isAdmin'] : false;
 
           setState(() {
@@ -263,14 +270,12 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           
-          // --- BOTÃO EXCLUSIVO DE ADMIN APARECE AQUI SE FOR TRUE ---
           if (_isAdmin)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 child: InkWell(
                   onTap: () {
-                    // Futuramente criaremos a tela de Admin e colocaremos a rota aqui!
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Painel Admin em construção!")),
                     );
@@ -339,7 +344,7 @@ class _HomePageState extends State<HomePage> {
               child: Text("Nossos Serviços", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
           ),
-            SliverPadding(
+          SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverGrid.count(
               crossAxisCount: 2,
@@ -347,10 +352,17 @@ class _HomePageState extends State<HomePage> {
               crossAxisSpacing: 16,
               children: [
                 ServiceCard(label: "AGENDAR", icon: Icons.calendar_today_rounded, onTap: () {Navigator.pushNamed(context, '/booking');}),
-                // Novos botões estratégicos:
                 ServiceCard(label: "FIDELIDADE", icon: Icons.star_rounded, onTap: () {Navigator.pushNamed(context, '/loyalty');}),
                 ServiceCard(label: "PRODUTOS", icon: Icons.shopping_bag_rounded, onTap: () {Navigator.pushNamed(context, '/products');}),
-                ServiceCard(label: "CONTATO", icon: Icons.phone_android_rounded, onTap: () {Navigator.pushNamed(context, '/profile');}),
+                
+                // 4. MUDANÇA PRINCIPAL AQUI: O BOTÃO CONTATO AGORA TROCA A ABA!
+                ServiceCard(label: "CONTATO", icon: Icons.phone_android_rounded, onTap: () {
+                  if (widget.onNavigateToProfile != null) {
+                    widget.onNavigateToProfile!(); // Aciona a mudança de índice
+                  } else {
+                    Navigator.pushNamed(context, '/profile'); // Fallback de segurança
+                  }
+                }),
               ],
             ),
           ),

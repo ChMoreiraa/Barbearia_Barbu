@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
 import 'screens/auth/login_page.dart';
 import 'screens/home/home_page.dart';
 import 'core/theme/app_theme.dart';
@@ -18,7 +17,7 @@ void main() async {
   // 1. Garante que o Flutter esteja pronto antes de chamar pacotes nativos
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 2. Inicializa o Firebase com as opções geradas para o seu projeto
+  // 2. Inicializa o Firebase com as opções geradas para o seu projeto  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
